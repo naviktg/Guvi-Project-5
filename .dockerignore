@@ -1,0 +1,11 @@
+.git
+.gitignore
+.github
+.idea
+.vscode
+
+target/
+*.log
+
+README.md
+Jenkinsfile
