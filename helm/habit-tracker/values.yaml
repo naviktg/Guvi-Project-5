@@ -2,7 +2,7 @@ replicaCount: 2
 
 image:
   repository: navikaran/habit-tracker
-  tag: "4"
+  tag: "5"
   pullPolicy: IfNotPresent
 
 service:
