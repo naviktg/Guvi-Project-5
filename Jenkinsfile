@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -66,6 +65,44 @@ pipeline {
                 }
             }
         }
+
+        stage('Update Helm Configuration') {
+            steps {
+                sh '''
+                    sed -i "s/^  tag:.*/  tag: \\"${BUILD_NUMBER}\\"/" helm/habit-tracker/values.yaml
+                    grep "tag:" helm/habit-tracker/values.yaml
+                '''
+            }
+        }
+
+        stage('Push Deployment Config to GitHub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'github-project5',
+                    usernameVariable: 'GITHUB_USER',
+                    passwordVariable: 'GITHUB_TOKEN'
+                )]) {
+                    sh '''
+                        set +x
+
+                        git config user.name "Jenkins CI"
+                        git config user.email "jenkins@users.noreply.github.com"
+
+                        git add helm/habit-tracker/values.yaml
+
+                        if ! git diff --cached --quiet; then
+                            git commit -m "Update Habit Tracker image to build ${BUILD_NUMBER}"
+
+                            AUTH=$(printf "%s:%s" "$GITHUB_USER" "$GITHUB_TOKEN" | base64 -w0)
+
+                            git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:main
+                        else
+                            echo "No Helm configuration changes to push."
+                        fi
+                    '''
+                }
+            }
+        }
     }
 
     post {
@@ -75,7 +112,7 @@ pipeline {
         }
 
         success {
-            echo 'Project 5 CI pipeline completed successfully!'
+            echo 'Project 5 CI and GitOps configuration update completed successfully!'
         }
 
         failure {
@@ -83,4 +120,3 @@ pipeline {
         }
     }
 }
-
