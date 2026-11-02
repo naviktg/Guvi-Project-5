@@ -8,6 +8,7 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 git branch: 'main',
@@ -27,7 +28,7 @@ pipeline {
                 sh './mvnw test'
             }
         }
-    }
+
         stage('Docker Build') {
             steps {
                 sh '''
@@ -52,14 +53,18 @@ pipeline {
                 }
             }
         }
+    }
+
     post {
         always {
             junit allowEmptyResults: true,
                   testResults: 'target/surefire-reports/*.xml'
         }
+
         success {
             echo 'Project 5 CI pipeline completed successfully!'
         }
+
         failure {
             echo 'Project 5 CI pipeline failed. Check console output.'
         }
