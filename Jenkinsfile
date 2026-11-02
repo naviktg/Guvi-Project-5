@@ -28,7 +28,30 @@ pipeline {
             }
         }
     }
+        stage('Docker Build') {
+            steps {
+                sh '''
+                    docker build -t navikaran/habit-tracker:${BUILD_NUMBER} .
+                '''
+            }
+        }
 
+        stage('Docker Push') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-project5',
+                    usernameVariable: 'DOCKERHUB_USER',
+                    passwordVariable: 'DOCKERHUB_TOKEN'
+                )]) {
+                    sh '''
+                        set +x
+                        echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USER" --password-stdin
+                        docker push navikaran/habit-tracker:${BUILD_NUMBER}
+                        docker logout
+                    '''
+                }
+            }
+        }
     post {
         always {
             junit allowEmptyResults: true,
