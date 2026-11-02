@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
 
@@ -26,6 +27,18 @@ pipeline {
         stage('Unit Test') {
             steps {
                 sh './mvnw test'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube-Project5') {
+                    sh '''
+                        ./mvnw sonar:sonar \
+                            -Dsonar.projectKey=habit-tracker \
+                            -Dsonar.projectName="Habit Tracker"
+                    '''
+                }
             }
         }
 
@@ -70,3 +83,4 @@ pipeline {
         }
     }
 }
+
